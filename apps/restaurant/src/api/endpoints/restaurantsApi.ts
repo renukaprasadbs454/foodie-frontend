@@ -55,9 +55,12 @@ export const restaurantsApi = baseApi.injectEndpoints({
     getRestaurantProfile: builder.query<RestaurantDetail, void>({
       query: () => '/api/v1/restaurants/me',
       providesTags: (result) =>
-        result?.restaurantId
-          ? [{ type: 'Restaurant', id: result.restaurantId }]
-          : [{ type: 'Restaurant', id: 'LIST' }],
+  result?.restaurantId
+    ? [
+        { type: 'Restaurant', id: result.restaurantId },
+        { type: 'Restaurant', id: 'LIST' },
+      ]
+    : [{ type: 'Restaurant', id: 'LIST' }],
       keepUnusedDataFor: 120,
     }),
     getRestaurant: builder.query<RestaurantDetail, string>({
@@ -88,6 +91,18 @@ export const restaurantsApi = baseApi.injectEndpoints({
               { type: 'Restaurant', id: 'LIST' },
             ]
           : [{ type: 'Restaurant', id: 'LIST' }],
+    }),
+         updateRestaurantStatus: builder.mutation<
+      void,
+      { isOnline: boolean }
+    >({
+      query: ({ isOnline }) => ({
+        url: '/api/v1/restaurants/me/status',
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: { isOnline },
+      }),
+      invalidatesTags: [{ type: 'Restaurant', id: 'LIST' }],
     }),
     getRestaurantReviews: builder.query<
       RestaurantReview[],
@@ -162,6 +177,7 @@ export const restaurantsApi = baseApi.injectEndpoints({
 
 export const {
   useRegisterRestaurantMutation,
+  useUpdateRestaurantStatusMutation,
   useGetRestaurantProfileQuery,
   useGetRestaurantQuery,
   useUpdateRestaurantProfileMutation,

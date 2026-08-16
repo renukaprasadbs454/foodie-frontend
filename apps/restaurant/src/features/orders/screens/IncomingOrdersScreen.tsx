@@ -55,7 +55,7 @@ const STATUS_FILTERS = [
   { key: 'REJECTED', label: 'Rejected' },
 ] as const;
 
-export function IncomingOrdersScreen({ navigation }: Props) {
+export function IncomingOrdersScreen({ navigation, route }: Props) {
   const { tokens } = useTheme();
   const { isConnected } = useConnectivity();
   const { width } = useWindowDimensions();
@@ -68,7 +68,9 @@ export function IncomingOrdersScreen({ navigation }: Props) {
 
   const { wsActive } = useRestaurantOrdersSubscription(restaurantId ?? null);
 
-  const [activeStatusFilter, setActiveStatusFilter] = useState<string>('');
+const [activeStatusFilter, setActiveStatusFilter] = useState<string>(
+  route.params?.initialStatus ?? '',
+);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
@@ -109,6 +111,11 @@ export function IncomingOrdersScreen({ navigation }: Props) {
   useEffect(() => {
     trackAnalyticsEvent('restaurant_incoming_orders_viewed');
   }, []);
+  useEffect(() => {
+  if (route.params?.initialStatus) {
+    setActiveStatusFilter(route.params.initialStatus);
+  }
+}, [route.params?.initialStatus]);
 
   const apiOrders = ordersQuery.data;
   const isUsingMock =

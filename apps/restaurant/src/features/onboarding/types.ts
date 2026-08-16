@@ -51,6 +51,7 @@ export type RestaurantDetail = {
   cuisineTypes?: string[];
   address?: RestaurantAddress;
   status?: RestaurantStatus;
+  isOnline?: boolean;
   logoImageUrl?: string | null;
   coverImageUrl?: string | null;
   avgRating?: number | string | null;

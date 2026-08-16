@@ -15,7 +15,7 @@ export type OnboardingStackParamList = {
 
 export type OrdersStackParamList = {
   Dashboard: undefined;
-  IncomingOrders: undefined;
+  IncomingOrders: { initialStatus?: 'ACCEPTED' | 'REJECTED' } | undefined;
   RestaurantOrderDetails: { orderId: string };
 };
 

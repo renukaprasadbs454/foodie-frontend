@@ -22,6 +22,7 @@ import {
 import {
   useGetRestaurantProfileQuery,
   useGetRestaurantQuery,
+  useUpdateRestaurantStatusMutation,
 } from '../../../api/endpoints/restaurantsApi';
 import { useGetRestaurantOrdersQuery } from '../../../api/endpoints/ordersApi';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
@@ -86,6 +87,9 @@ export function DashboardScreen({ navigation }: Props) {
   // Determine if we should use Mock Fallback
   const apiOrders = activeQuery.data;
   const apiProfile = restaurantQuery.data;
+  const isOnline = apiProfile?.isOnline ?? false;
+  const [updateRestaurantStatus, { isLoading: isUpdatingStatus }] =
+  useUpdateRestaurantStatusMutation();
   const isUsingMock =
     MOCK_CONFIG.ENABLE_MOCK_FALLBACK &&
     (!isConnected ||
@@ -126,6 +130,19 @@ export function DashboardScreen({ navigation }: Props) {
       : isUsingMock
         ? mockSummary.pendingOrdersCount
         : 0;
+  const handleStatusToggle = async () => {
+  try {
+    const newStatus = !isOnline;
+
+    const result = await updateRestaurantStatus({
+      isOnline: newStatus,
+    }).unwrap();
+
+    console.log('STATUS UPDATE SUCCESS:', result);
+  } catch (error) {
+    console.error('STATUS UPDATE FAILED:', error);
+  }
+};
 
   const completedOrdersCount =
     apiOrders && apiOrders.length > 0
@@ -236,8 +253,35 @@ export function DashboardScreen({ navigation }: Props) {
           />
         }
       >
-        {/* DEMO MODE BADGE (SUBTLE) */}
-        {isUsingMock ? <DemoModeIndicator isMockActive={true} /> : null}
+       {/* RESTAURANT STATUS BADGE */}
+<Pressable
+  onPress={handleStatusToggle}
+  disabled={isUpdatingStatus}
+  style={{
+    alignSelf: 'flex-start',
+    opacity: isUpdatingStatus ? 0.6 : 1,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    backgroundColor: isOnline ? '#DCFCE7' : '#F1F5F9',
+    borderWidth: 1,
+    borderColor: isOnline ? '#22C55E' : '#94A3B8',
+  }}
+>
+  <Text
+    variant="caption"
+    style={{
+      color: isOnline ? '#166534' : '#475569',
+      fontWeight: 'bold',
+    }}
+  >
+    {isUpdatingStatus
+      ? 'UPDATING...'
+      : isOnline
+        ? '🟢 ACTIVE'
+        : '⚪ INACTIVE'}
+  </Text>
+</Pressable>
 
         {/* BRANDING HEADER BANNER */}
         <Card
@@ -274,12 +318,27 @@ export function DashboardScreen({ navigation }: Props) {
                     backgroundColor: BRAND_ACCENT,
                   }}
                 />
-                <Text variant="caption" style={{ color: BRAND_ACCENT, fontWeight: 'bold' }}>
-                  ONLINE & ACCEPTING ORDERS
+               <Pressable
+                 onPress={handleStatusToggle}
+                 disabled={isUpdatingStatus}
+                 style={{
+                    opacity: isUpdatingStatus ? 0.6 : 1,
+                    }}
+                    >
+               <Text
+                  variant="caption"
+                  style={{
+                    color: isOnline ? '#A7F3D0' : '#CBD5E1',
+                    fontWeight: 'bold',
+                  }}
+                  >
+                {isUpdatingStatus ? 'UPDATING...' : isOnline ? '🟢 ACTIVE' : '⚪ INACTIVE'}
                 </Text>
-                <Text variant="caption" style={{ color: '#A7F3D0', fontSize: 11 }}>
-                  ({displayStatus})
-                </Text>
+</Pressable>
+
+<Text variant="caption" style={{ color: '#A7F3D0', fontSize: 11 }}>
+  ({displayStatus})
+</Text>
               </View>
             </View>
 
@@ -314,23 +373,27 @@ export function DashboardScreen({ navigation }: Props) {
 
           {/* Connection / Channel Status */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: tokens.spacing.xs, marginTop: 4 }}>
-            {!isConnected ? (
-              <Text variant="caption" style={{ color: '#F87171' }}>
-                ⚠️ Offline — Demo data active.
-              </Text>
-            ) : wsActive ? (
-              <Text variant="caption" style={{ color: '#86EFAC' }}>
-                ● Live order WebSocket connected
-              </Text>
-            ) : isUsingMock ? (
-              <Text variant="caption" style={{ color: '#FDE68A' }}>
-                ● Demo mode active (Mock data loaded)
-              </Text>
-            ) : (
-              <Text variant="caption" style={{ color: '#9CA3AF' }}>
-                Polling order queue (45s)…
-              </Text>
-            )}
+          <Pressable
+                onPress={handleStatusToggle}
+                disabled={isUpdatingStatus}
+                style={{
+                    opacity: isUpdatingStatus ? 0.6 : 1,
+                   }}
+                  >
+          <Text
+                variant="caption"
+                style={{
+                color: isOnline ? '#86EFAC' : '#CBD5E1',
+                fontWeight: 'bold',
+                }}
+                  >
+               {isUpdatingStatus
+                ? '• Updating...'
+                : isOnline
+                ? '• Active'
+                : '• Inactive'}
+          </Text>
+          </Pressable>
           </View>
         </Card>
 
@@ -453,47 +516,45 @@ export function DashboardScreen({ navigation }: Props) {
             Quick Actions
           </Text>
 
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.xs }}>
-            <Button
-              label="📋 Live Orders"
-              accessibilityLabel="Open order queue"
-              style={{ flex: 1, minWidth: 140, backgroundColor: BRAND_PRIMARY }}
-              onPress={() => {
-                trackAnalyticsEvent('open_queue_tapped');
-                navigation.getParent()?.navigate('OrdersTab');
-              }}
-            />
-            <Button
-              label="🍽️ Menu"
-              accessibilityLabel="Open menu"
-              variant="secondary"
-              style={{ flex: 1, minWidth: 140 }}
-              onPress={() => {
-                trackAnalyticsEvent('open_menu_tapped');
-                navigation.getParent()?.navigate('MenuTab');
-              }}
-            />
-            <Button
-              label="⭐ Reviews"
-              accessibilityLabel="Open reviews"
-              variant="secondary"
-              style={{ flex: 1, minWidth: 140 }}
-              onPress={() => {
-                trackAnalyticsEvent('open_reviews_tapped');
-                navigation.getParent()?.navigate('ReviewsTab');
-              }}
-            />
-            <Button
-              label="👤 Profile"
-              accessibilityLabel="Open profile"
-              variant="secondary"
-              style={{ flex: 1, minWidth: 140 }}
-              onPress={() => {
-                trackAnalyticsEvent('open_profile_tapped');
-                navigation.getParent()?.navigate('ProfileTab');
-              }}
-            />
-          </View>
+         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: tokens.spacing.xs }}>
+  <Button
+    label="📋 Live Orders"
+    accessibilityLabel="Open live orders"
+    style={{ flex: 1, minWidth: 140, backgroundColor: BRAND_PRIMARY }}
+    onPress={() => {
+      trackAnalyticsEvent('open_queue_tapped');
+      navigation.getParent()?.navigate('OrdersTab');
+    }}
+  />
+
+  <Button
+    label="✅ Accepted Orders"
+    accessibilityLabel="Open accepted orders"
+    variant="secondary"
+    style={{ flex: 1, minWidth: 140 }}
+    onPress={() => {
+      trackAnalyticsEvent('open_accepted_orders_tapped');
+      navigation.getParent()?.navigate('OrdersTab', {
+        screen: 'IncomingOrders',
+        params: { initialStatus: 'ACCEPTED' },
+      });
+    }}
+  />
+
+  <Button
+    label="❌ Rejected Orders"
+    accessibilityLabel="Open rejected orders"
+    variant="secondary"
+    style={{ flex: 1, minWidth: 140 }}
+    onPress={() => {
+      trackAnalyticsEvent('open_rejected_orders_tapped');
+      navigation.getParent()?.navigate('OrdersTab', {
+        screen: 'IncomingOrders',
+        params: { initialStatus: 'REJECTED' },
+      });
+    }}
+  />
+</View>
         </View>
 
         {/* RECENT ORDERS SECTION */}

@@ -33,7 +33,10 @@ import {
   useUpdateMenuItemMutation,
   useUploadMenuItemImageMutation,
 } from '../../../api/endpoints/menuApi';
-import { useGetRestaurantProfileQuery } from '../../../api/endpoints/restaurantsApi';
+import { 
+  useGetRestaurantProfileQuery,
+  useUpdateRestaurantStatusMutation,
+ } from '../../../api/endpoints/restaurantsApi';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import {
   selectRestaurantId,
@@ -149,6 +152,9 @@ export function MenuItemsScreen({ navigation }: Props) {
   const profileQuery = useGetRestaurantProfileQuery(undefined, {
     skip: Boolean(storedRestaurantId),
   });
+  const isOnline = profileQuery.data?.isOnline ?? false;
+  const [updateRestaurantStatus, { isLoading: isUpdatingStatus }] =
+  useUpdateRestaurantStatusMutation();
 
   useEffect(() => {
     if (profileQuery.data?.restaurantId && !storedRestaurantId) {
@@ -586,8 +592,37 @@ export function MenuItemsScreen({ navigation }: Props) {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* DEMO MODE INDICATOR */}
-        {isUsingMock ? <DemoModeIndicator isMockActive={true} /> : null}
+        {/* RESTAURANT STATUS */}
+  <Pressable
+     onPress={() => {
+       void updateRestaurantStatus({ isOnline: !isOnline });
+     }}
+     disabled={profileQuery.isFetching || isUpdatingStatus}
+     style={{
+       alignSelf: 'flex-start',
+       opacity: profileQuery.isFetching || isUpdatingStatus ? 0.6 : 1,
+       paddingHorizontal: 10,
+       paddingVertical: 5,
+       borderRadius: 12,
+       backgroundColor: isOnline ? '#DCFCE7' : '#F1F5F9',
+       borderWidth: 1,
+       borderColor: isOnline ? '#22C55E' : '#94A3B8',
+       }}
+    >
+  <Text
+    variant="caption"
+    style={{
+      color: isOnline ? '#166534' : '#475569',
+      fontWeight: 'bold',
+    }}
+  >
+    {profileQuery.isFetching || isUpdatingStatus
+      ? 'UPDATING...'
+      : isOnline
+        ? '🟢 ACTIVE'
+        : '⚪ INACTIVE'}
+  </Text>
+</Pressable>
 
         {/* 1. PAGE HEADER */}
         <View

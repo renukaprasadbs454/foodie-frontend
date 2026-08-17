@@ -22,6 +22,10 @@ import {
   useGetRestaurantOrdersQuery,
   useTransitionOrderStatusMutation,
 } from '../../../api/endpoints/ordersApi';
+import {
+  useGetRestaurantProfileQuery,
+  useUpdateRestaurantStatusMutation,
+} from '../../../api/endpoints/restaurantsApi';
 import { useAppSelector } from '../../../store/hooks';
 import { selectRestaurantId } from '../../onboarding/restaurantOnboardingSlice';
 import { toUnwrappedApiError } from '../../auth/apiError';
@@ -57,6 +61,21 @@ const STATUS_FILTERS = [
 
 export function IncomingOrdersScreen({ navigation, route }: Props) {
   const { tokens } = useTheme();
+  const { data: restaurantProfile } = useGetRestaurantProfileQuery();
+const isOnline = restaurantProfile?.isOnline ?? false;
+
+const [updateRestaurantStatus, { isLoading: isUpdatingStatus }] =
+  useUpdateRestaurantStatusMutation();
+
+const handleStatusToggle = async () => {
+  try {
+    await updateRestaurantStatus({
+      isOnline: !isOnline,
+    }).unwrap();
+  } catch (error) {
+    console.error('Failed to update restaurant status', error);
+  }
+};
   const { isConnected } = useConnectivity();
   const { width } = useWindowDimensions();
   const isWide = width >= 768;
@@ -295,8 +314,35 @@ const [activeStatusFilter, setActiveStatusFilter] = useState<string>(
           />
         }
       >
-        {/* DEMO MODE INDICATOR */}
-        {isUsingMock ? <DemoModeIndicator isMockActive={true} /> : null}
+       {/* RESTAURANT STATUS */}
+<Pressable
+  onPress={handleStatusToggle}
+  disabled={isUpdatingStatus}
+  style={{
+    alignSelf: 'flex-start',
+    opacity: isUpdatingStatus ? 0.6 : 1,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    backgroundColor: isOnline ? '#DCFCE7' : '#F1F5F9',
+    borderWidth: 1,
+    borderColor: isOnline ? '#22C55E' : '#94A3B8',
+  }}
+>
+  <Text
+    variant="caption"
+    style={{
+      color: isOnline ? '#166534' : '#475569',
+      fontWeight: 'bold',
+    }}
+  >
+    {isUpdatingStatus
+      ? 'UPDATING...'
+      : isOnline
+        ? '🟢 ACTIVE'
+        : '⚪ INACTIVE'}
+  </Text>
+</Pressable>
 
         {/* HEADER SECTION */}
         <View style={{ gap: tokens.spacing.xs }}>

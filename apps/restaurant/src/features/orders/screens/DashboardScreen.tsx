@@ -523,7 +523,9 @@ export function DashboardScreen({ navigation }: Props) {
     style={{ flex: 1, minWidth: 140, backgroundColor: BRAND_PRIMARY }}
     onPress={() => {
       trackAnalyticsEvent('open_queue_tapped');
-      navigation.getParent()?.navigate('OrdersTab');
+      navigation.getParent()?.navigate('OrdersTab', {
+      screen: 'IncomingOrders',
+      });
     }}
   />
 
@@ -551,6 +553,18 @@ export function DashboardScreen({ navigation }: Props) {
       navigation.getParent()?.navigate('OrdersTab', {
         screen: 'IncomingOrders',
         params: { initialStatus: 'REJECTED' },
+      });
+    }}
+  />
+  <Button
+    label="📝 Raise Complaint"
+    accessibilityLabel="Raise a complaint"
+    variant="secondary"
+    style={{ flex: 1, minWidth: 140 }}
+    onPress={() => {
+       trackAnalyticsEvent('raise_complaint_tapped');
+       navigation.getParent()?.navigate('OrdersTab', {
+       screen: 'Complaint',
       });
     }}
   />

@@ -17,6 +17,7 @@ export type OrdersStackParamList = {
   Dashboard: undefined;
   IncomingOrders: { initialStatus?: 'ACCEPTED' | 'REJECTED' } | undefined;
   RestaurantOrderDetails: { orderId: string };
+  Complaint: undefined;
 };
 
 export type MenuStackParamList = {

@@ -13,6 +13,7 @@ import { RestaurantImagesScreen } from '../features/onboarding/screens/Restauran
 import { DashboardScreen } from '../features/orders/screens/DashboardScreen';
 import { IncomingOrdersScreen } from '../features/orders/screens/IncomingOrdersScreen';
 import { RestaurantOrderDetailsScreen } from '../features/orders/screens/RestaurantOrderDetailsScreen';
+import { ComplaintScreen } from '../features/orders/screens/ComplaintScreen';
 import { NotificationsGapShellScreen } from '../features/notifications/screens/NotificationsGapShellScreen';
 import { BankAndBusinessDetailsScreen } from '../features/profile/screens/BankAndBusinessDetailsScreen';
 import { RestaurantLocationScreen } from '../features/profile/screens/RestaurantLocationScreen';
@@ -58,7 +59,10 @@ function DashboardStackNavigator() {
 
 function OrdersStackNavigator() {
   return (
-    <OrdersStack.Navigator screenOptions={customHeaderOption}>
+      <OrdersStack.Navigator
+      initialRouteName="IncomingOrders"
+      screenOptions={customHeaderOption}
+      >
       <OrdersStack.Screen
         name="IncomingOrders"
         component={IncomingOrdersScreen}
@@ -74,6 +78,11 @@ function OrdersStackNavigator() {
         component={RestaurantOrderDetailsScreen}
         options={{ title: 'Order Details' }}
       />
+      <OrdersStack.Screen
+        name="Complaint"
+        component={ComplaintScreen}
+        options={{ title: 'Raise Complaint' }}
+/>
     </OrdersStack.Navigator>
   );
 }

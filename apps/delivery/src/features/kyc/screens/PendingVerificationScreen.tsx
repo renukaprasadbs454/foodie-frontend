@@ -39,7 +39,7 @@ export function PendingVerificationScreen({ navigation }: Props) {
   const uploadedCount = useAppSelector(selectUploadedDocCount);
   const { data: profile, isLoading, isFetching, refetch, isError } = useGetDeliveryProfileQuery(
     undefined,
-    { skip: !isConnected, pollingInterval: 15000 }
+    { skip: !isConnected, pollingInterval: 3000 }
   );
   const [toast, setToast] = useState<{
     message: string;
@@ -68,6 +68,7 @@ export function PendingVerificationScreen({ navigation }: Props) {
     }
   };
 
+  const isVerified = profile?.kycStatus === 'VERIFIED';
   const isRejected = profile?.kycStatus === 'REJECTED';
 
   let finalImgUri = profile?.profileImageUrl ?? null;
@@ -120,7 +121,7 @@ export function PendingVerificationScreen({ navigation }: Props) {
         contentContainerStyle={{ padding: 20, paddingBottom: 48, gap: 16 }}
         refreshControl={<RefreshControl refreshing={isLoading || isFetching} onRefresh={onRefresh} />}
       >
-        <KycStepper activeIndex={1} />
+        <KycStepper activeIndex={isVerified ? 2 : 1} />
 
         {(!isConnected || isError) && (
           <View style={{ backgroundColor: '#fffbeb', padding: 12, borderRadius: 8 }}>
@@ -132,21 +133,54 @@ export function PendingVerificationScreen({ navigation }: Props) {
 
         <View style={{ backgroundColor: 'white', padding: 24, borderRadius: 16, alignItems: 'center', marginTop: 12, elevation: 2, shadowColor: '#000', shadowOffset: { height: 2, width: 0 }, shadowRadius: 4, shadowOpacity: 0.05 }}>
           {finalImgUri && (
-            <View style={{ marginBottom: 16, borderWidth: 3, borderColor: THEME_EMERALD, borderRadius: 60, padding: 2 }}>
+            <View style={{ marginBottom: 16, borderWidth: 3, borderColor: isVerified ? '#10B981' : isRejected ? '#EF4444' : THEME_EMERALD, borderRadius: 60, padding: 2 }}>
               <RNImage source={{ uri: finalImgUri }} style={{ width: 100, height: 100, borderRadius: 50 }} resizeMode="cover" />
             </View>
           )}
-          <Text variant="heading1" style={{ color: isRejected ? '#ef4444' : THEME_EMERALD, marginBottom: 8, fontSize: 32 }}>
-            {isRejected ? '✖' : '🕒'}
+          <Text variant="heading1" style={{ color: isVerified ? '#059669' : isRejected ? '#ef4444' : '#D97706', marginBottom: 8, fontSize: 36 }}>
+            {isVerified ? '✅' : isRejected ? '❌' : '⏳'}
           </Text>
+          <View
+            style={{
+              backgroundColor: isVerified ? '#D1FAE5' : isRejected ? '#FEE2E2' : '#FEF3C7',
+              paddingHorizontal: 14,
+              paddingVertical: 5,
+              borderRadius: 14,
+              marginBottom: 12,
+            }}
+          >
+            <Text
+              variant="caption"
+              style={{
+                fontWeight: '800',
+                letterSpacing: 0.5,
+                color: isVerified ? '#047857' : isRejected ? '#DC2626' : '#B45309',
+              }}
+            >
+              STATUS: {profile?.kycStatus ?? 'PENDING'}
+            </Text>
+          </View>
           <Text variant="heading2" style={{ textAlign: 'center', color: '#1e293b', marginBottom: 12 }}>
-            {isRejected ? "Verification Rejected" : "Review in Progress"}
+            {isVerified
+              ? "KYC Approved & Verified!"
+              : isRejected
+              ? "Verification Rejected"
+              : "Review in Progress (Pending Admin Approval)"}
           </Text>
-          <Text variant="body" style={{ textAlign: 'center', color: '#64748b' }}>
-            {isRejected
-              ? 'Unfortunately, your KYC documents were rejected. Please review them and re-submit.'
-              : 'Your documents have been securely uploaded and are waiting for an Admin to verify them. You will be able to start delivering as soon as approved!'}
+          <Text variant="body" style={{ textAlign: 'center', color: '#64748b', lineHeight: 22 }}>
+            {isVerified
+              ? "Your KYC documents have been reviewed and accepted by the administrator. You are verified and ready to go online to deliver orders!"
+              : isRejected
+              ? "Unfortunately, your KYC documents were rejected. Please review them and re-submit."
+              : "Your registration is currently in PENDING status. Once an Admin reviews and accepts your KYC in the Admin Panel, your account will automatically become VERIFIED!"}
           </Text>
+          {!isVerified && !isRejected && (
+            <View style={{ marginTop: 16, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#F8FAFC', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
+              <Text variant="caption" style={{ color: '#64748B', fontSize: 12 }}>
+                🔄 Live sync active (polling every 3s)
+              </Text>
+            </View>
+          )}
         </View>
 
         {isRejected && (
@@ -158,12 +192,21 @@ export function PendingVerificationScreen({ navigation }: Props) {
           />
         )}
 
-        <Button
-          label="Go to Home Dashboard"
-          accessibilityLabel="Go to Home Dashboard"
-          variant={isRejected ? "secondary" : "primary"}
-          onPress={() => navigation.navigate('DeliveryHome' as any)}
-        />
+        {isVerified ? (
+          <Button
+            label="Go to Online Dashboard"
+            accessibilityLabel="Go to Online Dashboard"
+            variant="primary"
+            onPress={() => navigation.replace('DeliveryHome' as any)}
+          />
+        ) : (
+          <Button
+            label="🔄 Refresh Verification Status"
+            accessibilityLabel="Refresh Verification Status"
+            variant="primary"
+            onPress={onRefresh}
+          />
+        )}
       </ScrollView>
       <Toast
         visible={Boolean(toast)}

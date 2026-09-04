@@ -37,15 +37,7 @@ export function RootNavigator() {
   // Strict KYC constraint: Must have all 3 REQUIRED_DOCS uploaded to bypass KYC block
   const hasUploadedDocs = profileQuery.data?.documents && profileQuery.data.documents.length >= 3;
 
-  const isKycVerified = profileQuery.data?.kycStatus === 'VERIFIED';
-
-  const initialRouteName = isKycVerified
-    ? 'DeliveryHome'
-    : ((isNewUser && !hasUploadedDocs) || !hasUploadedDocs)
-      ? 'Kyc'
-      : (profileQuery.data?.kycStatus === 'PENDING' || profileQuery.data?.kycStatus === 'REJECTED')
-        ? 'PendingVerification'
-        : 'DeliveryHome';
+  const initialRouteName = 'DeliveryHome';
 
   return (
     <NavigationContainer linking={linking}>

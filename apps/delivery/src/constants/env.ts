@@ -27,8 +27,16 @@ if (Platform.OS === 'web') {
 }
 
 export const ENV = {
-  apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL ?? extra.apiBaseUrl ?? 'https://api.foodie.kwiko.org',
-  wsUrl: process.env.EXPO_PUBLIC_WS_URL ?? extra.wsUrl ?? 'wss://api.foodie.kwiko.org/ws',
+  apiBaseUrl:
+    Platform.OS === 'web'
+      ? ''
+      : (process.env.EXPO_PUBLIC_API_BASE_URL ??
+        extra.apiBaseUrl ??
+        'http://localhost:8082'),
+  wsUrl:
+    process.env.EXPO_PUBLIC_WS_URL ??
+    extra.wsUrl ??
+    'ws://localhost:8082/ws',
   appName: 'foodie-delivery',
   appVersion: Constants.expoConfig?.version ?? '0.1.0',
 } as const;

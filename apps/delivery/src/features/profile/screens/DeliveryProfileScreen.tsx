@@ -36,7 +36,7 @@ export function DeliveryProfileScreen({ navigation }: Props) {
   const { isConnected } = useConnectivity();
   const userId = useAppSelector(selectUserId);
   const userType = useAppSelector(selectUserType);
-  const profileQuery = useGetDeliveryProfileQuery();
+  const profileQuery = useGetDeliveryProfileQuery(undefined, { pollingInterval: 3000, refetchOnFocus: true });
   const dispatch = useAppDispatch();
   const [toast, setToast] = useState<{
     message: string;
@@ -175,8 +175,8 @@ export function DeliveryProfileScreen({ navigation }: Props) {
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16 }}>
               <Text style={{ fontSize: 16, color: '#111827' }}>Verification</Text>
-              <Text style={{ fontSize: 16, color: kycStatus === 'VERIFIED' ? '#10B981' : '#F59E0B', fontWeight: '700' }}>
-                {kycStatus === 'VERIFIED' ? 'Verified' : 'Pending KYC'}
+              <Text style={{ fontSize: 16, color: kycStatus === 'VERIFIED' ? '#10B981' : kycStatus === 'REJECTED' ? '#EF4444' : '#F59E0B', fontWeight: '700' }}>
+                {kycStatus === 'VERIFIED' ? 'Verified' : kycStatus === 'REJECTED' ? 'Rejected' : 'Pending'}
               </Text>
             </View>
           </View>

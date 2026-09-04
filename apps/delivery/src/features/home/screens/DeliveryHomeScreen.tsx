@@ -28,6 +28,7 @@ import { selectUserId } from '../../auth/authSlice';
 import { Audio } from 'expo-av';
 import { OfferCard } from '../components/OfferCard';
 import { useAcceptAssignmentMutation } from '../../../api/endpoints/deliveryApi';
+import { ENV } from '../../../constants/env';
 import { toUnwrappedApiError } from '../../auth/apiError';
 import { addRejectedOffer } from '../availabilitySlice';
 import { Toast } from 'foodie-shared-rn';
@@ -282,7 +283,7 @@ export function DeliveryHomeScreen({ navigation }: Props) {
 
   let finalImgUri = profileQuery.data?.profileImageUrl ?? null;
   if (finalImgUri) {
-    const apiBaseUrl = Constants.expoConfig?.extra?.apiBaseUrl as string | undefined;
+    const apiBaseUrl = ENV.apiBaseUrl;
     if (finalImgUri.includes('localhost') && apiBaseUrl) {
       const hostMatch = apiBaseUrl.match(/:\/\/(.[^:/]+)/);
       if (hostMatch && hostMatch[1]) {
@@ -330,16 +331,42 @@ export function DeliveryHomeScreen({ navigation }: Props) {
                 {new Date().getHours() < 12 ? 'Good Morning,' : new Date().getHours() < 17 ? 'Good Afternoon,' : 'Good Evening,'}
               </Text>
             </View>
-            <Text style={styles.name}>{profileQuery.data?.name ? profileQuery.data.name.split(' ')[0] : 'Partner'}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
+              <Text style={styles.name}>{profileQuery.data?.name ? profileQuery.data.name.split(' ')[0] : 'Partner'}</Text>
+              <View
+                style={{
+                  backgroundColor: isKycApproved ? '#D1FAE5' : kycStatus === 'REJECTED' ? '#FEE2E2' : '#FEF3C7',
+                  paddingHorizontal: 8,
+                  paddingVertical: 2,
+                  borderRadius: 12,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: '700',
+                    color: isKycApproved ? '#065F46' : kycStatus === 'REJECTED' ? '#991B1B' : '#92400E',
+                  }}
+                >
+                  {isKycApproved ? '✓ VERIFIED' : `⏳ KYC ${kycStatus}`}
+                </Text>
+              </View>
+            </View>
           </View>
 
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <Pressable
               style={styles.bellButton}
               onPress={() => navigation.navigate('DeliveryNotifications' as any)}
             >
-              <Feather name="bell" size={24} color="#FFF" />
+              <Feather name="bell" size={22} color="#FFF" />
               <View style={styles.bellDot} />
+            </Pressable>
+            <Pressable
+              style={styles.bellButton}
+              onPress={() => navigation.navigate('DeliveryProfile' as any)}
+            >
+              <Feather name="user" size={22} color="#FFF" />
             </Pressable>
           </View>
         </View>

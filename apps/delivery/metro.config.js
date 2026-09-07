@@ -1,5 +1,4 @@
 const path = require('path');
-const https = require('https');
 const { getDefaultConfig } = require('expo/metro-config');
 
 const projectRoot = __dirname;
@@ -10,7 +9,7 @@ const sharedRnRoot = path.resolve(workspaceRoot, 'packages/shared-rn');
 const config = getDefaultConfig(projectRoot);
 
 // 1. Watch all files within the monorepo
-config.watchFolders = [workspaceRoot];
+config.watchFolders = [workspaceRoot, ...(config.watchFolders || [])];
 
 // 2. Let Metro know where to resolve packages and in what order
 config.resolver.nodeModulesPaths = [

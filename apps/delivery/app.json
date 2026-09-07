@@ -62,9 +62,11 @@
     "extra": {
       "apiBaseUrl": "https://api.foodie.kwiko.org",
       "wsUrl": "wss://api.foodie.kwiko.org/ws",
+      "appEnv": "development",
       "eas": {
-        "projectId": "00000000-0000-0000-0000-000000000001"
+        "projectId": "7d788220-9693-4a2b-b8b1-4b258090a846"
       }
-    }
+    },
+    "owner": "foodie-delivery"
   }
 }

@@ -15,6 +15,10 @@ build/
 *.log
 *.txt
 
+# Lockfiles from other package managers
+package-lock.json
+yarn.lock
+
 # OS & Editor
 .DS_Store
 Thumbs.db

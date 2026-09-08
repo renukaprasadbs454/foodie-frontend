@@ -1,5 +1,4 @@
-import { LocationManagementPage } from '@/features/location/pages/LocationManagementPage';
-
-export default function LocationPage() {
-  return <LocationManagementPage />;
-}
+﻿'use client';
+import dynamic from 'next/dynamic';
+const LocationManagerFree = dynamic(() => import('@/components/LocationManagerFree'), { ssr: false });
+export default function Page(){ return <LocationManagerFree /> }
